@@ -60,3 +60,38 @@ plt.show()
 
 
 
+import pymysql
+
+#计算两个6面筛子投掷之和及结果的出现次数，并将结果放在mysql库
+results = []
+for para1 in range(1,7):
+    for para2 in range(1,7):
+        sum = para1 + para2
+        results.append(sum)
+print(results)
+
+dict = {}
+results_set = set(results)
+for para in results_set:
+    dict[para] = results.count(para)
+print(dict)
+
+db = pymysql.connect("localhost","root","123456","data1")
+cursor = db.cursor()
+cursor.execute("DROP TABLE IF EXISTS DICE")
+sql = """CREATE TABLE DICE (
+         Number  CHAR(20) NOT NULL,
+         Count  CHAR(20) )"""
+cursor.execute(sql)
+
+for number,count in dict.items():
+    number_str = str(number)
+    count_str = str(count)
+    sql2 = "INSERT INTO DICE (Number,Count) VALUES('%s','%s')"%(number_str,count_str)
+    try:
+        cursor.execute(sql2)
+        db.commit()
+        print("插入成功")
+    except:
+        db.rollback()
+        print("插入失败")
